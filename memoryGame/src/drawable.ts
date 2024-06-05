@@ -6,15 +6,15 @@ export interface Drawable {
 
 
  export class Cat implements Drawable {
-    public faceCenterX: number;
-    public faceCenterY: number;
+    public centerX: number;
+    public centerY: number;
     public faceRadius: number;
     public color: CatColor;
     public eyeAlignment: EyeAlignment;
 
-    constructor(faceCenterX: number, faceCenterY: number, faceRadius: number, color: CatColor, eyeAlignment: EyeAlignment) {
-        this.faceCenterX = faceCenterX;
-        this.faceCenterY = faceCenterY;
+    constructor(centerX: number, centerY: number, faceRadius: number, color: CatColor, eyeAlignment: EyeAlignment) {
+        this.centerX = centerX;
+        this.centerY = centerY;
         this.faceRadius = faceRadius;
         this.color = color;
         this.eyeAlignment = eyeAlignment;
@@ -23,15 +23,15 @@ export interface Drawable {
 
     draw(gc: CanvasRenderingContext2D): void {
         const leftEar = [
-            [this.faceCenterX - this.faceRadius * 0.875, this.faceCenterY - this.faceRadius * 0.375], // (125, 375)
-            [this.faceCenterX - this.faceRadius, this.faceCenterY - this.faceRadius * 1.25], // (100, 550)
-            [this.faceCenterX - this.faceRadius * 0.25, this.faceCenterY - this.faceRadius * 0.875] // (250, 475)
+            [this.centerX - this.faceRadius * 0.875, this.centerY - this.faceRadius * 0.375], // (125, 375)
+            [this.centerX - this.faceRadius, this.centerY - this.faceRadius * 1.25], // (100, 550)
+            [this.centerX - this.faceRadius * 0.25, this.centerY - this.faceRadius * 0.875] // (250, 475)
         ];
 
         const rightEar = [
-            [this.faceCenterX + this.faceRadius * 0.875, this.faceCenterY - this.faceRadius * 0.375], // (125, 375)
-            [this.faceCenterX + this.faceRadius, this.faceCenterY - this.faceRadius * 1.25], // (100, 550)
-            [this.faceCenterX + this.faceRadius * 0.25, this.faceCenterY - this.faceRadius * 0.875] // (250, 475)
+            [this.centerX + this.faceRadius * 0.875, this.centerY - this.faceRadius * 0.375], // (125, 375)
+            [this.centerX + this.faceRadius, this.centerY - this.faceRadius * 1.25], // (100, 550)
+            [this.centerX + this.faceRadius * 0.25, this.centerY - this.faceRadius * 0.875] // (250, 475)
         ];
         
         let eyeOffsetX;
@@ -82,7 +82,7 @@ export interface Drawable {
         // Draw the face
         
         gc.beginPath();
-        gc.arc(this.faceCenterX, this.faceCenterY, this.faceRadius, 0, 2 * Math.PI);
+        gc.arc(this.centerX, this.centerY, this.faceRadius, 0, 2 * Math.PI);
         gc.strokeStyle = "black";
         gc.fillStyle = this.color;
         gc.fill();
@@ -92,8 +92,8 @@ export interface Drawable {
         gc.strokeStyle = "black";
         gc.beginPath();
         gc.ellipse(
-            this.faceCenterX - this.faceRadius * 0.5, // x coordinate
-            this.faceCenterY, // y coordinate
+            this.centerX - this.faceRadius * 0.5, // x coordinate
+            this.centerY, // y coordinate
             this.faceRadius * 0.2, // x radius
             this.faceRadius * 0.3, // y radius
             0, // no rotation
@@ -107,8 +107,8 @@ export interface Drawable {
         gc.strokeStyle = "black";
         gc.beginPath();
         gc.ellipse(
-            this.faceCenterX + this.faceRadius * 0.5, // x coordinate
-            this.faceCenterY, // y coordinate
+            this.centerX + this.faceRadius * 0.5, // x coordinate
+            this.centerY, // y coordinate
             this.faceRadius * 0.2, // x radius
             this.faceRadius * 0.3, // y radius
             0, // no rotation
@@ -122,8 +122,8 @@ export interface Drawable {
         gc.fillStyle = "black";
         gc.beginPath();
         gc.ellipse(
-            this.faceCenterX - this.faceRadius * 0.5 + eyeOffsetX, // x coordinate
-            this.faceCenterY, // y coordinate
+            this.centerX - this.faceRadius * 0.5 + eyeOffsetX, // x coordinate
+            this.centerY, // y coordinate
             this.faceRadius * 0.05, // x radius (smaller than eye)
             this.faceRadius * 0.075, // y radius (smaller than eye)
             0, // no rotation
@@ -135,8 +135,8 @@ export interface Drawable {
         gc.fillStyle = "black";
         gc.beginPath();
         gc.ellipse(
-            this.faceCenterX + this.faceRadius * 0.5 + eyeOffsetX, // x coordinate
-            this.faceCenterY, // y coordinate
+            this.centerX + this.faceRadius * 0.5 + eyeOffsetX, // x coordinate
+            this.centerY, // y coordinate
             this.faceRadius * 0.05, // x radius (smaller than eye)
             this.faceRadius * 0.075, // y radius (smaller than eye)
             0, // no rotation
@@ -146,7 +146,7 @@ export interface Drawable {
     }
 
     hitTest(mx: number, my: number): boolean{
-        return Math.sqrt((mx - this.faceCenterX) ** 2 + (my - this.faceCenterY) ** 2) < this.faceRadius;
+        return Math.sqrt((mx - this.centerX) ** 2 + (my - this.centerY) ** 2) < this.faceRadius;
     }
 }
 
@@ -271,11 +271,11 @@ export class StartText implements Drawable {
 
         gc.font = "24px Arial";
         gc.fillStyle = "black";
-        gc.fillText("Pattern Length = " + this.patternLength + "Symbol Length = " + this.symbolLength, 400, 80);
+        gc.fillText("Pattern Length = " + this.patternLength + ", Symbol Length = " + this.symbolLength, 400, 80);
     }
 }
 
-export class MemorizeText implements Drawable {
+export class GameText implements Drawable {
     draw(gc: CanvasRenderingContext2D): void {
         gc.font = "24px Arial";
         gc.fillStyle = "black";
@@ -288,7 +288,7 @@ export class MemorizeText implements Drawable {
 }
 
 
-export class GameText implements Drawable {
+export class MemorizeText implements Drawable {
     draw(gc: CanvasRenderingContext2D): void {
         gc.font = "24px Arial";
         gc.fillStyle = "black";
