@@ -424,7 +424,7 @@ function generateHiddenCode(totalSymbols: number) {
   console.log(availablePositions);
   // Remove positions already used in  hiddenCode
   // Now availablePositions contains only unused indices
-  for (let i = hiddenCode.length; i < totalSymbols; i++) {
+  for (let i = desiredPattern.length; i < totalSymbols; i++) {
     if (availablePositions.length === 0) break; // Safety check
 
     // Randomly select a symbol from the hotbar
@@ -445,7 +445,7 @@ function generateHiddenCode(totalSymbols: number) {
     symbolClone.centerX = baseX + incrementX * chosenIndex;
     symbolClone.centerY = 300; // Set a constant y-coordinate
 
-    hiddenCode.push(symbolClone);
+    desiredPattern.push(symbolClone);
 
     // Remove the used position from available positions
     availablePositions.splice(randomPosIndex, 1);
@@ -456,7 +456,7 @@ function generateHiddenCode(totalSymbols: number) {
 function setupPattern(levelCount: number) {
   // Assume 'levelCount' dictates how many symbols are currently shown to the player
   generateHiddenCode(levelCount);
-  desiredPattern = hiddenCode.slice(0, levelCount); // Show only the part of the code as per current level
+  desiredPattern = desiredPattern.slice(0, levelCount); // Show only the part of the code as per current level
 }
 
 // Example usage: Call this when switching to "prep" mode from "start" mode
