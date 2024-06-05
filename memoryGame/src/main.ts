@@ -28,14 +28,14 @@ enum State {
   GamePlayState,
   MemorizeState,
   WinState,
-  LoseState
+  LoseState,
 }
 
 let shapes: Shape[] = [];
 let boxes: Square[] = [];
 let texts: Text[] = [];
 let hotBoxes: HotBox[] = [];
-
+let availableBoxIndices: number[] = [];
 // mouse position
 let mx = 0;
 let my = 0;
@@ -85,7 +85,7 @@ let gameCount = 1;
 let desiredPattern: Shape[] = [];
 let temp: Shape[] = [];
 let userPattern: Shape[] = [];
-let hiddenCode: Shape[] = []; // This will store the actual symbols as per the game's logic
+let randomPattern: Shape[] = []; // This will store the actual symbols as per the game's logic
 
 const startText = new StartText(3, 5);
 const memorizeText = new MemorizeText();
@@ -94,7 +94,6 @@ const gameText = new GameText();
 
 texts.push(startText);
 let currentState: State = State.GameSetupState;
-
 
 function handleEvent(e: SKEvent) {
   switch (e.type) {
@@ -112,17 +111,16 @@ function handleEvent(e: SKEvent) {
 
 let levelCount: number = 1;
 function handleKeyboardEvent(e: SKKeyboardEvent) {
-    if (currentState === State.GameSetupState) {
-
+  if (currentState === State.GameSetupState) {
     userPattern = [];
-    desiredPattern = []
-    console.log("desiredPattern", desiredPattern);
-    console.log("userPattern", userPattern);
-    console.log("shapes", shapes);
-    console.log("boxes", boxes);
-    console.log("hotBoxes", hotBoxes);
-    // if the user presses the left/right arrow keys  
-    // if the user presses the left/right arrow keys  
+    desiredPattern = [];
+    // console.log("desiredPattern", desiredPattern);
+    // console.log("userPattern", userPattern);
+    // console.log("shapes", shapes);
+    // console.log("boxes", boxes);
+    // console.log("hotBoxes", hotBoxes);
+    // if the user presses the left/right arrow keys
+    // if the user presses the left/right arrow keys
     switch (e.key) {
       case "ArrowLeft":
         if (shapes.length > 1) {
@@ -145,55 +143,55 @@ function handleKeyboardEvent(e: SKKeyboardEvent) {
         currentState = State.MemorizeState;
         texts.pop();
         texts.push(memorizeText);
-        enterPrepMode();
+        initializeAvailableBoxes();
+        generateHiddenCode();
         break;
       default:
         break;
     }
   } else if (currentState === State.MemorizeState) {
-    console.log("Desired", desiredPattern);
+    //console.log("Desired", desiredPattern);
     switch (e.key) {
       case " ":
+        console.log("Desired pattern for level" + levelCount + " is: " + desiredPattern);
         currentState = State.GamePlayState;
         texts.pop();
         texts.push(gameText);
+        
         break;
       default:
         break;
     }
   } else if (currentState === State.GamePlayState) {
-
     const patternsMatch = checkPatternsMatch(userPattern, desiredPattern);
 
     switch (e.key) {
       case " ":
-        console.log(`LevelCount: ${levelCount}`);
-        console.log(`NUMBER OF BOXES: ${boxCount} ${boxes.length}`);
+        // console.log(`LevelCount: ${levelCount}`);
+        // console.log(`NUMBER OF BOXES: ${boxCount} ${boxes.length}`);
         if (patternsMatch) {
           levelCount++;
           currentState = State.MemorizeState;
           texts.pop();
           texts.push(memorizeText);
-          setupPattern(levelCount);
-        } 
-        else {
+          generateHiddenCode();
+        } else {
           currentState = State.GamePlayState;
         }
 
-        if (levelCount == boxes.length + 1 ) {
+        if (levelCount == boxes.length + 1) {
           currentState = State.WinState;
           texts.pop();
           texts.push(winText);
           levelCount = 1;
         }
-         
+
         break;
 
       default:
         break;
     }
-  }
-  else if (currentState === State.WinState) {
+  } else if (currentState === State.WinState) {
     let startText = new StartText(shapeCount, boxCount);
     switch (e.key) {
       case " ":
@@ -226,7 +224,6 @@ function checkPatternsMatch(pattern1: Shape[], pattern2: Shape[]): boolean {
   return true;
 }
 
-
 function shapesMatch(shape1: Shape, shape2: Shape): boolean {
   if (shape1 instanceof Cat && shape2 instanceof Cat) {
     return (
@@ -234,7 +231,7 @@ function shapesMatch(shape1: Shape, shape2: Shape): boolean {
       shape1.centerY === shape2.centerY &&
       shape1.color === shape2.color &&
       shape1.eyeAlignment === shape2.eyeAlignment &&
-      shape1.faceRadius === shape2.faceRadius 
+      shape1.faceRadius === shape2.faceRadius
     );
   } else if (shape1 instanceof Polygon && shape2 instanceof Polygon) {
     return (
@@ -402,75 +399,77 @@ function updateStartText(patternLength: number, symbolLength: number) {
 // Global variables to hold the current game state
 // Function to generate a hidden code based on the current symbols in the hotbar
 
-function generateHiddenCode(totalSymbols: number) {
-  const baseX = 100; // Initial x-coordinate
-  const incrementX = 110; // Increment for each x-coordinate
-  let availablePositions: any[] = [];
+// function pickRandomBox(boxes: Square[], totalSymbols: number): Square {
+//   const randomIndex = Math.floor(Math.random() * boxes.length);
+//   const baseX = 100; // Initial x-coordinate
+//   const incrementX = 110; // Increment for each x-coordinate
+//   let availablePositions: any[] = [] ;
 
-  // Initialize available positions based on the total number of symbols needed
-  for (let i = 0; i < totalSymbols; i++) {
-    availablePositions.push(i);
+//   // Initialize available positions based on the total number of symbols needed
+//   for (let i = 0; i < totalSymbols; i++) {
+//     availablePositions.push(0);
+//   }
+
+//   let indices = Array.from({ length: totalSymbols }, (_, index) => index);
+
+//   boxes.forEach((symbol) => {
+//     const posIndex = (symbol.centerX - baseX) / incrementX;
+//     availablePositions = availablePositions.filter(
+//       (index) => index !== posIndex
+//     );
+//   });
+
+//   const randomPosition = Math.floor(Math.random() * availablePositions.length);
+//   return boxes[availablePositions[randomPosition]];
+
+//   // for (let i = totalSymbols; i >= 0; i--) {
+//   //       // Generate a random index between 0 and i
+//   //       const j = Math.floor(Math.random() * (i + 1));
+        
+//   //       // Swap indices[i] and indices[j]
+//   //       [indices[i], indices[j]] = [indices[j], indices[i]];
+
+//   //       // Set the element at the shuffled index to 1
+//   //       boxes[indices[i]];
+
+//   //       // Log the array state to show progress
+//   //       console.log(`Iteration ${totalSymbols}: Array state - ${totalSymbols}`);
+//   //   }
+// }
+
+function initializeAvailableBoxes(): void {
+  availableBoxIndices = boxes.map((_, index) => index);  // Initialize with all indices
+}
+
+function pickRandomBox(): Square {
+  const randomIndex = Math.floor(Math.random() * availableBoxIndices.length);
+  const boxIndex = availableBoxIndices.splice(randomIndex, 1)[0];
+  return boxes[boxIndex];
+}
+
+function getRandomPatternSymbol(): Shape {
+  const randomIndex = Math.floor(Math.random() * shapes.length);
+  
+  // Create a deep copy of the shape object
+  let shape = Object.assign(
+    Object.create(Object.getPrototypeOf(shapes[randomIndex])),
+    shapes[randomIndex]
+  );
+  if(availableBoxIndices.length != 0){
+    const box = pickRandomBox();
+    shape.centerX = box.centerX;
+    shape.centerY = box.centerY;
   }
-
-  // Remove positions already used in hiddenCode
-  desiredPattern.forEach((symbol) => {
-    const posIndex = (symbol.centerX - baseX) / incrementX;
-    availablePositions = availablePositions.filter(
-      (index) => index !== posIndex
-    );
-  });
-  let symbols = getCurrentHotbarSymbols();
-  console.log(symbols);
-  console.log(availablePositions);
-  // Remove positions already used in  hiddenCode
-  // Now availablePositions contains only unused indices
-  for (let i = desiredPattern.length; i < totalSymbols; i++) {
-    if (availablePositions.length === 0) break; // Safety check
-
-    // Randomly select a symbol from the hotbar
-    const randomSymbolIndex = Math.floor(Math.random() * symbols.length);
-    const symbolClone = Object.assign(
-      Object.create(Object.getPrototypeOf(symbols[randomSymbolIndex])),
-      symbols[randomSymbolIndex]
-    );
-
-    // Choose a random available position
-
-    const randomPosIndex = Math.floor(
-      Math.random() * availablePositions.length
-    );
-    const chosenIndex = availablePositions[randomPosIndex];
-
-    // Calculate the x-coordinate for this symbol
-    symbolClone.centerX = baseX + incrementX * chosenIndex;
-    symbolClone.centerY = 300; // Set a constant y-coordinate
-
-    desiredPattern.push(symbolClone);
-
-    // Remove the used position from available positions
-    availablePositions.splice(randomPosIndex, 1);
-  }
+  
+  //console.log("shape picked for this level: ", shape);
+  return shape;
 }
 
-// This function sets up the initial pattern display in "prep" mode
-function setupPattern(levelCount: number) {
-  // Assume 'levelCount' dictates how many symbols are currently shown to the player
-  generateHiddenCode(levelCount);
-  desiredPattern = desiredPattern.slice(0, levelCount); // Show only the part of the code as per current level
-}
+function generateHiddenCode() {
+    desiredPattern.push(getRandomPatternSymbol());
+} 
 
-// Example usage: Call this when switching to "prep" mode from "start" mode
-function enterPrepMode() {
-  const currentHotbarSymbols = getCurrentHotbarSymbols(); // You need to implement this function
-  generateHiddenCode(1);
-  setupPattern(1); // Start by showing the first symbol
-}
 
-// Example utility function to get currently displayed symbols in the hotbar
-function getCurrentHotbarSymbols(): Shape[] {
-  // You need to define how to access these from your game state
-  return shapes;
-}
 
 //Set the event listener
 setSKEventListener(handleEvent);
@@ -481,7 +480,7 @@ setSKDrawCallback((gc: CanvasRenderingContext2D) => {
   hotBoxes.forEach((hotBox) => hotBox.draw(gc));
   texts.forEach((text) => text.draw(gc));
   shapes.forEach((shape) => shape.draw(gc));
-  
+
   if (currentState == State.MemorizeState) {
     desiredPattern.forEach((shape) => {
       if (shape) {
